@@ -250,7 +250,7 @@ def plot_power_efficiency_Ecouple(path):  # plot power and efficiency vs number 
         except OSError:
             print('Missing file flux')
 
-    axarr[0].plot(num_minima2, -2.0*pi*power_y_array*timescale, 'o', color='C1', label='$2$', markersize=8)
+    axarr[0].plot(num_minima2, -2.0*pi*power_y_array*timescale, 'o', color='C1', label='Fokker-Planck', markersize=8)
 
     axarr[0].yaxis.offsetText.set_fontsize(14)
     axarr[0].tick_params(axis='y', labelsize=14)

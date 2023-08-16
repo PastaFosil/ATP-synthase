@@ -4,9 +4,9 @@ from numpy import finfo, asarray, empty, zeros, linspace
 from datetime import datetime
 
 import sys
+import os
 
 from fpe import launchpad_reference
-
 
 def get_params():
 
@@ -27,14 +27,14 @@ def get_params():
     Ecouple = 1.0 # energy scale of coupling between Fo and F1
     E1 = 2.0 # energy scale of F1
     mu_Hp = 4.0 #  mu_{H+}: energy INTO (positive) Fo by F1
-    mu_atp = 2.0 # mu_{ATP}: energy INTO (positive) F1 by Fo
+    mu_atp = -2.0 # mu_{ATP}: energy INTO (positive) F1 by Fo
 
     n1 = 3.0  # number of minima in the potential of Fo
     n2 = float(sys.argv[1])  # number of minima in the potential of F1
     phase = 0.0  # how much sub-systems are offset from one another
 
     # specify full path to where simulation results are output
-    data_dir = '/home/juancho/Documents/MolecularMachine/ATP_response-master/src/working_directory_cython/results'
+    data_dir = path + 'results'
 
     return (
         dt, N, gamma1, gamma2, beta, m1, m2, n1, n2,
@@ -184,4 +184,5 @@ def main():
 
 
 if __name__ == "__main__":
+    path = os.getcwd()
     main()
