@@ -8,25 +8,34 @@ from matplotlib import rc
 rc('font', **{'family': 'sans-serif', 'sans-serif': ['Helvetica']})
 rc('text', usetex=True)
 
-path = os.getcwd()
-
 if not os.path.exists(path+'/plots'):  # create a diretory to output plots
     os.mkdir(path+'/plots')
 
-N = 360  # N x N grid is used for Fokker-Planck simulations
-dx = 2 * math.pi / N  # spacing between gridpoints
-positions = linspace(0, 2 * math.pi - dx, N)  # gridpoints
-timescale = 1.5 * 10**4  # conversion factor between simulation and experimental timescale
+def get_params():
 
-E0 = 2.0  # barrier height Fo
-E1 = 2.0  # barrier height F1
-psi_1 = 4.0  # chemical driving force on Fo
-psi_2 = -2.0  # chemical driving force on F1
-num_minima1 = 3.0  # number of barriers in Fo's landscape
-num_minima2 = linspace(3.0,30.0,28)  # number of barriers in F1's landscape
+    """Specify parameters of simulation here."""
+    
+    # discretization parameters
+    N = 360  # N x N grid is used for Fokker-Planck simulations
+    dx = 2 * math.pi / N  # spacing between gridpoints
+    positions = linspace(0, 2 * math.pi - dx, N)  # gridpoints
+    timescale = 1.5 * 10**4  # conversion factor between simulation and experimental timescale
 
-#Ecouple_array = array([2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0])  # coupling strengths
-Ecouple = 1.0  # coupling strengths
+    E0 = 2.0  # barrier height Fo
+    E1 = 2.0  # barrier height F1
+    psi_1 = 4.0  # chemical driving force on Fo
+    psi_2 = -2.0  # chemical driving force on F1
+    num_minima1 = 3.0  # number of barriers in Fo's landscape
+    num_minima2 = linspace(3.0,30.0,28)  # number of barriers in F1's landscape
+    Ecouple = 1.0  # coupling strengths
+
+    phase = 0.0
+
+    return (
+        timescale, N, num_minima1, num_minima2,
+        phase, E0, E1, Ecouple, psi_1, psi_2
+    )
+
 
 
 def calc_flux(p_now, drift_at_pos, diffusion_at_pos, flux_array, N):
@@ -138,9 +147,13 @@ def calc_flux(p_now, drift_at_pos, diffusion_at_pos, flux_array, N):
 
 
 def flux_power_efficiency(path): # processing of raw data
-    phase_array = nparray([0.0])
-    psi1_array = nparray([4.0])
-    psi2_array = nparray([-2.0])
+    [
+        timescale, N, num_minima1, num_minima2,
+        phase, E0, E1, Ecouple, psi_1, psi_2
+    ] = get_params()
+    phase_array = nparray([phase])
+    psi1_array = nparray([psi_1])
+    psi2_array = nparray([psi_2])
 
     for psi_1 in psi1_array:
         for psi_2 in psi2_array:
@@ -207,7 +220,10 @@ def flux_power_efficiency(path): # processing of raw data
                     ofile.flush()
 
 def plot_power_efficiency_Ecouple(path):  # plot power and efficiency vs number of barriers n2
-    num_minima2 = linspace(3.0,30.0,28)
+    [
+        timescale, N, num_minima1, num_minima2,
+        phase, E0, E1, Ecouple, psi_1, psi_2
+    ] = get_params()
 
     output_file_name = (
             path + "/plots/" + "P_ATP_eff_Ecouple_" + "E0_{0}_Ecouple_{1}_E1_{2}_psi1_{3}_psi2_{4}_n1_{5}" + "_.pdf")
