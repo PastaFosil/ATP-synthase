@@ -20,13 +20,14 @@ timescale = 1.5 * 10**4  # conversion factor between simulation and experimental
 
 E0 = 2.0  # barrier height Fo
 E1 = 2.0  # barrier height F1
-Ecouple = 10.0  # coupling strengths
 psi_1 = 4.0  # chemical driving force on Fo
 psi_2 = -2.0  # chemical driving force on F1
 num_minima1 = 3.0  # number of barriers in Fo's landscape
 num_minima2 = linspace(3.0,30.0,28)  # number of barriers in F1's landscape
 
-phase = 0.0
+#Ecouple_array = array([2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0])  # coupling strengths
+Ecouple = 10.0  # coupling strengths
+
 
 def calc_flux(p_now, drift_at_pos, diffusion_at_pos, flux_array, N):
     # explicit update of the corners
@@ -135,12 +136,11 @@ def calc_flux(p_now, drift_at_pos, diffusion_at_pos, flux_array, N):
                 -(diffusion_at_pos[3, i, j+1]*p_now[i, j+1]-diffusion_at_pos[3, i, j-1]*p_now[i, j-1])/(2.0*dx)
                 )
 
-def flux_power_efficiency(path, 
-                          dx,N,num_minima1,num_minima2,phase,E0,E1,Ecouple,psi_1,psi_2): # processing of raw data
-    
-    phase_array = nparray([phase])
-    psi1_array = nparray([psi_1])
-    psi2_array = nparray([psi_2])
+
+def flux_power_efficiency(path): # processing of raw data
+    phase_array = nparray([0.0])
+    psi1_array = nparray([4.0])
+    psi2_array = nparray([-2.0])
 
     for psi_1 in psi1_array:
         for psi_2 in psi2_array:
@@ -206,7 +206,8 @@ def flux_power_efficiency(path,
                             + f"{efficiency_ratio[ii]:.15e}" + "\n")
                     ofile.flush()
 
-def plot_power_efficiency_Ecouple(path,timescale, num_minima1, num_minima2, E0, E1, Ecouple, psi_1, psi_2):  # plot power and efficiency vs number of barriers n2
+def plot_power_efficiency_Ecouple(path):  # plot power and efficiency vs number of barriers n2
+    num_minima2 = linspace(3.0,30.0,28)
 
     output_file_name = (
             path + "/plots/" + "P_ATP_eff_Ecouple_" + "E0_{0}_Ecouple_{1}_E1_{2}_psi1_{3}_psi2_{4}_n1_{5}" + "_.pdf")
@@ -214,8 +215,9 @@ def plot_power_efficiency_Ecouple(path,timescale, num_minima1, num_minima2, E0, 
 
     # power plot
     axarr[0].axhline(0, color='black', linewidth=1)  # x-axis
-    optimal_n2 = num_minima1/(psi_2/psi_1 + sqrt(1+(psi_2/psi_1)*(psi_2/psi_1)))
-    axarr[0].axvline(optimal_n2, color='black', linestyle='--', linewidth=1)  # lining up features in the two plots
+    maxpower = 2 * pi * 0.000085247 * timescale
+    axarr[0].axhline(maxpower, color='black', linestyle=':', linewidth=1)  # line at infinite power coupling
+    axarr[0].axvline(12, color='black', linestyle='--', linewidth=1)  # lining up features in the two plots
     axarr[0].fill_between([1, 250], 0, 31, facecolor='grey', alpha=0.2)  # shading power output
     '''
     # zero-barrier results
@@ -230,7 +232,6 @@ def plot_power_efficiency_Ecouple(path,timescale, num_minima1, num_minima2, E0, 
     # Fokker-Planck results (barriers)
     i = 0  # only use phase=0 data
     power_y_array = []
-    tight_power_array = empty(0) # curve at tight coupling limit
     for ii, minima2 in enumerate(num_minima2):
         input_file_name = (path + "/plots/" + "flux_power_efficiency_"
                            + "E0_{0}_E1_{1}_psi1_{2}_psi2_{3}_n1_{4}_n2_{5}_Ecouple_{6}" + "_outfile.dat")
@@ -238,18 +239,19 @@ def plot_power_efficiency_Ecouple(path,timescale, num_minima1, num_minima2, E0, 
             data_array = loadtxt(
                 input_file_name.format(E0, E1, psi_1, psi_2, num_minima1, minima2, Ecouple),
                 usecols=(0, 4))
-            
+            '''
+            if minima2 in num_minima2:  # data format varies a little
+                power_y = nparray(data_array[i, 1])
+            else:
+                power_y = nparray(data_array[1])
+            '''
             power_y = nparray(data_array[1])
             power_y_array = append(power_y_array, power_y)
-
-            tight_power = -(psi_2 + (num_minima1*psi_1/minima2-psi_2)/(1+(num_minima1/minima2)*(num_minima1/minima2)))*psi_2
-            tight_power_array = append(tight_power_array, tight_power)
         except OSError:
             print('Missing file flux')
 
     axarr[0].plot(num_minima2, -2.0*pi*power_y_array*timescale, 'o', color='C1', label='Fokker-Planck', markersize=8)
-    axarr[0].plot(num_minima2, tight_power_array, 'o', color='black', label='Tight coupling limit', markersize=8)
-    
+
     axarr[0].yaxis.offsetText.set_fontsize(14)
     axarr[0].tick_params(axis='y', labelsize=14)
     axarr[0].set_ylabel(r'$\beta \mathcal{P}_{\rm ATP} (\rm s^{-1}) $', fontsize=20)
@@ -267,7 +269,7 @@ def plot_power_efficiency_Ecouple(path,timescale, num_minima1, num_minima2, E0, 
     #####################################################
     # efficiency plot
     axarr[1].axhline(0, color='black', linewidth=1)  # x axis
-    axarr[1].axvline(optimal_n2, color='black', linestyle='--', linewidth=1)  # lining up features in the two plots
+    axarr[1].axvline(12, color='black', linestyle='--', linewidth=1)  # lining up features
     axarr[1].axhline(1, color='black', linestyle=':', linewidth=1)  # max efficiency
     axarr[1].fill_between([1, 250], 0, 1, facecolor='grey', alpha=0.2)  # shading power output
     '''
@@ -290,7 +292,6 @@ def plot_power_efficiency_Ecouple(path,timescale, num_minima1, num_minima2, E0, 
     '''
     # Fokker-Planck results (barriers)
     eff_array = []
-    tight_eff_array = empty(0)
     for ii, minima2 in enumerate(num_minima2):
         input_file_name = (
                 path + "/plots/flux_power_efficiency_"
@@ -298,14 +299,16 @@ def plot_power_efficiency_Ecouple(path,timescale, num_minima1, num_minima2, E0, 
         try:
             data_array = loadtxt(
                 input_file_name.format(E0, E1, psi_1, psi_2, num_minima1, minima2, Ecouple), usecols=5)
-
+            '''
+            if minima2 in num_minima2:
+                eff_array = append(eff_array, data_array[0])
+            else:
+                eff_array = append(eff_array, data_array)
+            '''
             eff_array = append(eff_array, data_array)
-            tight_eff = -num_minima1*psi_2/(minima2*psi_1)
-            tight_eff_array = append(tight_eff_array, tight_eff)
         except OSError:
             print('Missing file efficiency')
-    axarr[1].plot(num_minima2, eff_array, 'o', color='C1', markersize=8)
-    axarr[1].plot(num_minima2, tight_eff_array, 'o', color='black', markersize=8)
+    axarr[1].plot(num_minima2, eff_array / (-psi_2 / psi_1), 'o', color='C1', markersize=8)
 
     axarr[1].set_xlabel(r'$\beta E_{\rm couple}$', fontsize=20)
     axarr[1].set_ylabel(r'$\eta / \eta^{\rm max}$', fontsize=20)
@@ -326,7 +329,8 @@ def plot_power_efficiency_Ecouple(path,timescale, num_minima1, num_minima2, E0, 
     f.savefig(output_file_name.format(E0, Ecouple, E1, psi_1, psi_2, num_minima1))
 
 if __name__ == "__main__":
-
+    #path = "/Users/Emma/sfuvault/SivakGroup/Emma/ATPsynthase/FokkerPlanck_2D_full/" + \
+               #  "prediction/fokker_planck/working_directory_cython/"
     path = os.getcwd()
-    flux_power_efficiency(path,dx,N,num_minima1,num_minima2,phase,E0,E1,Ecouple,psi_1,psi_2)
-    plot_power_efficiency_Ecouple(path,timescale, num_minima1, num_minima2, E0, E1, Ecouple, psi_1, psi_2)
+    flux_power_efficiency(path)
+    plot_power_efficiency_Ecouple(path)

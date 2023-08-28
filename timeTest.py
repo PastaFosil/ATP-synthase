@@ -30,7 +30,7 @@ if dt > time_check:
     print("!!!TIME UNSTABLE!!! No use in going on. Aborting...\n")
     exit(1)
 else:
-    print("(All's good pardner) __^___^__")
+    print("(All's good pardner) __^__^__")
     print("                  v  =('. ')=  |")
     print("                      |`[]``\  /")
     print("                      |______|/")
