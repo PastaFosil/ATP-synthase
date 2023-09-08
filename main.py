@@ -18,7 +18,7 @@ def get_params():
 
     # model constants
     beta = 1.0  # thermodynamic beta: 1/kT
-    m1 = m2 = 1.0  # masses of Fo and F1
+    m0 = m1 = 1.0  # masses of Fo and F1
 
     # model-specific parameters
     gamma1 = gamma2 = 1000.0  # drag coefficients of Fo and F1
@@ -26,26 +26,26 @@ def get_params():
     E0 = 2.0 # energy scale of Fo
     Ecouple = 1.0 # energy scale of coupling between Fo and F1
     E1 = 2.0 # energy scale of F1
-    mu_Hp = 4.0 #  mu_{H+}: energy INTO (positive) Fo by F1
-    mu_atp = -2.0 # mu_{ATP}: energy INTO (positive) F1 by Fo
+    mu0 = 4.0 #  mu_{H+}: energy INTO (positive) Fo by F1
+    mu1 = -2.0 # mu_{ATP}: energy INTO (positive) F1 by Fo
 
-    n1 = 3.0  # number of minima in the potential of Fo
-    n2 = float(sys.argv[1])  # number of minima in the potential of F1
+    n0 = 3.0  # number of minima in the potential of Fo
+    n1 = float(sys.argv[1])  # number of minima in the potential of F1
     phase = 0.0  # how much sub-systems are offset from one another
 
     # specify full path to where simulation results are output
     data_dir = path + 'results'
 
     return (
-        dt, N, gamma1, gamma2, beta, m1, m2, n1, n2,
-        phase, E0, E1, Ecouple, mu_Hp, mu_atp, data_dir
+        dt, N, gamma1, gamma2, beta, m0, m1, n0, n1,
+        phase, E0, E1, Ecouple, mu0, mu1, data_dir
     )
 
 
 def save_data_reference(
-    n1, n2,
+    n0, n1,
     phase,
-    E0, Ecouple, E1, mu_Hp, mu_atp, p_now, p_equil,
+    E0, Ecouple, E1, mu0, mu1, p_now, p_equil,
     potential_at_pos, drift_at_pos, diffusion_at_pos,
     N, data_dir
     ):
@@ -54,8 +54,8 @@ def save_data_reference(
 
     data_filename = (
         f"/reference_E0_{E0}_Ecouple_{Ecouple}_E1_{E1}_"
-        + f"psi1_{mu_Hp}_psi2_{mu_atp}_"
-        + f"n1_{n1}_n2_{n2}_phase_{phase}_"
+        + f"psi1_{mu0}_psi2_{mu1}_"
+        + f"n1_{n0}_n2_{n1}_phase_{phase}_"
         + "outfile.dat"
     ) #TODO: Consult with Emma on filenames. psi -> mu.
 
@@ -82,8 +82,8 @@ def main():
 
     # unload parameters
     [
-        dt, N, gamma1, gamma2, beta, m1, m2, n1, n2,
-        phase, E0, E1, Ecouple, mu_Hp, mu_atp, data_dir
+        dt, N, gamma1, gamma2, beta, m0, m1, n0, n1,
+        phase, E0, E1, Ecouple, mu0, mu1, data_dir
     ] = get_params()
 
     # calculate derived discretization parameters
@@ -94,8 +94,8 @@ def main():
         time_check = 100000000.0
     else:
         time_check = dx/(
-            (0.5*(Ecouple+E0*n1)-mu_Hp)/(m1*gamma1)
-            + (0.5*(Ecouple+E1*n2)-mu_atp)/(m2*gamma2)
+            (0.5*(Ecouple+E0*n0)-mu0)/(m0*gamma1)
+            + (0.5*(Ecouple+E1*n1)-mu1)/(m1*gamma2)
         )
 
     if dt > time_check:
@@ -123,7 +123,7 @@ def main():
         + "Launching FPE simulation..."
     )
     launchpad_reference(
-        n1, n2,
+        n0, n1,
         phase,
         positions,
         prob, p_now,
@@ -132,8 +132,8 @@ def main():
         drift_at_pos,
         diffusion_at_pos,
         N, dx, check_step,
-        E0, Ecouple, E1, mu_Hp, mu_atp,
-        dt, m1, m2, beta, gamma1, gamma2
+        E0, Ecouple, E1, mu0, mu1,
+        dt, m0, m1, beta, gamma1, gamma2
     )
     print(
         f"{datetime.now().strftime('[%Y-%m-%d %H:%M:%S]')} "
@@ -170,9 +170,9 @@ def main():
         f"{datetime.now().strftime('[%Y-%m-%d %H:%M:%S]')} Saving data..."
     )
     save_data_reference(
-        n1, n2,
+        n0, n1,
         phase,
-        E0, Ecouple, E1, mu_Hp, mu_atp, p_now, p_equil,
+        E0, Ecouple, E1, mu0, mu1, p_now, p_equil,
         potential_at_pos, drift_at_pos, diffusion_at_pos, N,
         data_dir
     )
