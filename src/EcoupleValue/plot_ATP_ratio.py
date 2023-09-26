@@ -23,8 +23,8 @@ E1 = 2.0  # barrier height F1
 Ecouple = 10.0  # coupling strengths
 mu0 = 4.0  # chemical driving force on Fo
 mu1 = -2.0  # chemical driving force on F1
-num_minima0 = 3.0  # number of barriers in Fo's landscape
-num_minima1 = linspace(3.0,30.0,28)  # number of barriers in F1's landscape
+num_minima1 = 3.0  # number of barriers in Fo's landscape
+num_minima0 = linspace(3.0,30.0,28)  # number of barriers in F1's landscape
 
 phase = 0.0
 
@@ -136,7 +136,7 @@ def calc_flux(p_now, drift_at_pos, diffusion_at_pos, flux_array, N):
                 )
 
 def flux_power_efficiency(path, 
-                          dx,N,num_minima0,num_minima1,phase,E0,E1,Ecouple,mu0,mu1): # processing of raw data
+                          dx,N,num_minima1,num_minima0,phase,E0,E1,Ecouple,mu0,mu1): # processing of raw data
     
     phase_array = nparray([phase])
     psi1_array = nparray([mu0])
@@ -150,21 +150,21 @@ def flux_power_efficiency(path,
             integrate_power_Y = empty(phase_array.size)
             efficiency_ratio = empty(phase_array.size)
 
-            for minima1 in num_minima1:
+            for minima0 in num_minima0:
                 for ii, phase_shift in enumerate(phase_array):
                     input_file_name = (path +"/results/"+
-                                       "reference_E0_{0}_Ecouple_{1}_E1_{2}_psi1_{3}_psi2_{4}_n1_{5}_n2_{6}_phase_{7}" +
+                                       "reference_E0_{0}_Ecouple_{1}_E1_{2}_mu0_{3}_mu1_{4}_n1_{5}_n0_{6}_phase_{7}" +
                                        "_outfile.dat")
 
                     output_file_name = (path + "/plots/" + "flux_power_efficiency_" +
-                                        "E0_{0}_E1_{1}_psi1_{2}_psi2_{3}_n1_{4}_n2_{5}_Ecouple_{6}" + "_outfile.dat")
+                                        "E0_{0}_E1_{1}_mu0_{2}_mu1_{3}_n1_{4}_n0_{5}_Ecouple_{6}" + "_outfile.dat")
 
                     print("Calculating flux for " + f"mu0 = {mu0}, mu1 = {mu1}, " +
-                          f"Ecouple = {Ecouple}, num_minima0 = {num_minima0}, num_minima1 = {minima1}")
+                          f"Ecouple = {Ecouple}, num_minima1 = {num_minima1}, num_minima0 = {minima0}")
                     
                     try:
-                        data_array = loadtxt(input_file_name.format(E0, Ecouple, E1, mu0, mu1, num_minima0,
-                                                                    minima1, phase_shift),
+                        data_array = loadtxt(input_file_name.format(E0, Ecouple, E1, mu0, mu1, num_minima1,
+                                                                    minima0, phase_shift),
                                              usecols=(0, 3, 4, 5, 6, 7, 8))
                         N = int(sqrt(len(data_array)))  # check grid size
                         print('Grid size: ', N)
@@ -187,14 +187,14 @@ def flux_power_efficiency(path,
                         integrate_power_Y[ii] = integrate_flux_Y[ii]*mu1
                     except OSError:
                         print('Missing file')
-                        print(input_file_name.format(E0, Ecouple, E1, mu0, mu1, num_minima0, minima1,
+                        print(input_file_name.format(E0, Ecouple, E1, mu0, mu1, num_minima1, minima0,
                                                      phase_shift))
                 if abs(mu0) <= abs(mu1):
                     efficiency_ratio = -(integrate_power_X/integrate_power_Y)
                 else:
                     efficiency_ratio = -(integrate_power_Y/integrate_power_X)
 
-                with open(output_file_name.format(E0, E1, mu0, mu1, num_minima0, minima1, Ecouple), "w") as \
+                with open(output_file_name.format(E0, E1, mu0, mu1, num_minima1, minima0, Ecouple), "w") as \
                         ofile:
                     for ii, phase_shift in enumerate(phase_array):
                         ofile.write(
@@ -206,21 +206,21 @@ def flux_power_efficiency(path,
                             + f"{efficiency_ratio[ii]:.15e}" + "\n")
                     ofile.flush()
 
-def plot_power_efficiency_Ecouple(path,timescale, num_minima0, num_minima1, E0, E1, Ecouple, mu0, mu1):  # plot power and efficiency vs number of barriers n2
+def plot_power_efficiency_Ecouple(path,timescale, num_minima1, num_minima0, E0, E1, Ecouple, mu0, mu1):  # plot power and efficiency vs number of barriers n2
 
     output_file_name = (
-            path + "/plots/" + "P_ATP_eff_Ecouple_" + "E0_{0}_Ecouple_{1}_E1_{2}_psi1_{3}_psi2_{4}_n1_{5}" + "_.pdf")
+            path + "/plots/" + "P_ATP_eff_Ecouple_" + "E0_{0}_Ecouple_{1}_E1_{2}_mu0_{3}_mu1_{4}_n1_{5}" + "_.pdf")
     f, axarr = plt.subplots(2, 1, sharex='all', sharey='none', figsize=(6, 8))
 
     # power plot
     axarr[0].axhline(0, color='black', linewidth=1)  # x-axis
-    optimal_n2 = num_minima0/(mu1/mu0 + sqrt(1+(mu1/mu0)*(mu1/mu0)))
+    optimal_n2 = num_minima1/(mu1/mu0 + sqrt(1+(mu1/mu0)*(mu1/mu0)))
     axarr[0].axvline(optimal_n2, color='black', linestyle='--', linewidth=1)  # lining up features in the two plots
     axarr[0].fill_between([1, 250], 0, 31, facecolor='grey', alpha=0.2)  # shading power output
     '''
     # zero-barrier results
     input_file_name = (path + "/plotting_data/"
-                       + "flux_zerobarrier_psi1_{0}_psi2_{1}_outfile.dat")
+                       + "flux_zerobarrier_psi1_{0}_mu1_{1}_outfile.dat")
     data_array = loadtxt(input_file_name.format(mu0, mu1))
     num_minima1_array2 = array(data_array[:, 0])
     flux_y_array = array(data_array[:, 2])
@@ -231,24 +231,24 @@ def plot_power_efficiency_Ecouple(path,timescale, num_minima0, num_minima1, E0, 
     i = 0  # only use phase=0 data
     power_y_array = []
     tight_power_array = empty(0) # curve at tight coupling limit
-    for ii, minima1 in enumerate(num_minima1):
+    for ii, minima0 in enumerate(num_minima0):
         input_file_name = (path + "/plots/" + "flux_power_efficiency_"
-                           + "E0_{0}_E1_{1}_psi1_{2}_psi2_{3}_n1_{4}_n2_{5}_Ecouple_{6}" + "_outfile.dat")
+                           + "E0_{0}_E1_{1}_mu0_{2}_mu1_{3}_n1_{4}_n0_{5}_Ecouple_{6}" + "_outfile.dat")
         try:
             data_array = loadtxt(
-                input_file_name.format(E0, E1, mu0, mu1, num_minima0, minima1, Ecouple),
+                input_file_name.format(E0, E1, mu0, mu1, num_minima1, minima0, Ecouple),
                 usecols=(0, 4))
             
             power_y = nparray(data_array[1])
             power_y_array = append(power_y_array, power_y)
 
-            tight_power = -(mu1 + (num_minima0*mu0/minima1-mu1)/(1+(num_minima0/minima1)*(num_minima0/minima1)))*mu1
+            tight_power = -(mu1 + (num_minima1*mu0/minima0-mu1)/(1+(num_minima1/minima0)*(num_minima1/minima0)))*mu1
             tight_power_array = append(tight_power_array, tight_power)
         except OSError:
             print('Missing file flux')
 
-    axarr[0].plot(num_minima1, -2.0*pi*power_y_array*timescale, 'o', color='C1', label=r'$E_{couple}=$'+str(Ecouple), markersize=8)
-    axarr[0].plot(num_minima1, tight_power_array, 'o', color='black', label='Tight coupling limit', markersize=8)
+    axarr[0].plot(num_minima0, -2.0*pi*power_y_array*timescale, 'o', color='C1', label=r'$E_{couple}=$'+str(Ecouple), markersize=8)
+    axarr[0].plot(num_minima0, tight_power_array, 'o', color='black', label='Tight coupling limit', markersize=8)
     
     axarr[0].yaxis.offsetText.set_fontsize(14)
     axarr[0].tick_params(axis='y', labelsize=14)
@@ -274,7 +274,7 @@ def plot_power_efficiency_Ecouple(path,timescale, num_minima0, num_minima1, E0, 
     # zero-barrier curve
     input_file_name = (
             path + "/plotting_data/"
-            + "flux_zerobarrier_psi1_{0}_psi2_{1}_outfile.dat")
+            + "flux_zerobarrier_psi1_{0}_mu1_{1}_outfile.dat")
    
     try:
         data_array = loadtxt(input_file_name.format(mu0, mu1))
@@ -291,21 +291,21 @@ def plot_power_efficiency_Ecouple(path,timescale, num_minima0, num_minima1, E0, 
     # Fokker-Planck results (barriers)
     eff_array = []
     tight_eff_array = empty(0)
-    for ii, minima1 in enumerate(num_minima1):
+    for ii, minima0 in enumerate(num_minima0):
         input_file_name = (
                 path + "/plots/flux_power_efficiency_"
-                + "E0_{0}_E1_{1}_psi1_{2}_psi2_{3}_n1_{4}_n2_{5}_Ecouple_{6}" + "_outfile.dat")
+                + "E0_{0}_E1_{1}_mu0_{2}_mu1_{3}_n1_{4}_n0_{5}_Ecouple_{6}" + "_outfile.dat")
         try:
             data_array = loadtxt(
-                input_file_name.format(E0, E1, mu0, mu1, num_minima0, minima1, Ecouple), usecols=5)
+                input_file_name.format(E0, E1, mu0, mu1, num_minima1, minima0, Ecouple), usecols=5)
 
             eff_array = append(eff_array, data_array)
-            tight_eff = -num_minima0*mu1/(minima1*mu0)
+            tight_eff = -num_minima1*mu1/(minima0*mu0)
             tight_eff_array = append(tight_eff_array, tight_eff)
         except OSError:
             print('Missing file efficiency')
-    axarr[1].plot(num_minima1, eff_array, 'o', color='C1', markersize=8)
-    axarr[1].plot(num_minima1, tight_eff_array, 'o', color='black', markersize=8)
+    axarr[1].plot(num_minima0, eff_array, 'o', color='C1', markersize=8)
+    axarr[1].plot(num_minima0, tight_eff_array, 'o', color='black', markersize=8)
 
     axarr[1].set_xlabel(r'$n_2$', fontsize=20)
     axarr[1].set_ylabel(r'$\eta$', fontsize=20)
@@ -323,10 +323,10 @@ def plot_power_efficiency_Ecouple(path,timescale, num_minima0, num_minima1, E0, 
     f.subplots_adjust(hspace=0.01)
 
     f.tight_layout()
-    f.savefig(output_file_name.format(E0, Ecouple, E1, mu0, mu1, num_minima0))
+    f.savefig(output_file_name.format(E0, Ecouple, E1, mu0, mu1, num_minima1))
 
 if __name__ == "__main__":
 
     path = os.getcwd()
-    flux_power_efficiency(path,dx,N,num_minima0,num_minima1,phase,E0,E1,Ecouple,mu0,mu1)
-    plot_power_efficiency_Ecouple(path,timescale, num_minima0, num_minima1, E0, E1, Ecouple, mu0, mu1)
+    flux_power_efficiency(path,dx,N,num_minima1,num_minima0,phase,E0,E1,Ecouple,mu0,mu1)
+    plot_power_efficiency_Ecouple(path,timescale, num_minima1, num_minima0, E0, E1, Ecouple, mu0, mu1)

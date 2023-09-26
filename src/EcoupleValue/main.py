@@ -30,11 +30,11 @@ def get_params():
     mu1 = -2.0 # mu_{ATP}: energy INTO (positive) F1 by Fo
 
     n0 = 3.0  # number of minima in the potential of Fo
-    n1 = float(sys.argv[1])  # number of minima in the potential of F1
+    n1 = float(sys.argv[1])  # number of minima in the potential of F1 (receives input from bash file)
     phase = 0.0  # how much sub-systems are offset from one another
 
     # specify full path to where simulation results are output
-    data_dir = path + 'results'
+    data_dir = path + 'results' #may need to create results directory beforehand
 
     return (
         dt, N, gamma1, gamma2, beta, m0, m1, n0, n1,

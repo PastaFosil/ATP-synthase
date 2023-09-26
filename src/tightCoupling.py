@@ -53,7 +53,7 @@ def plot_power_efficiency_Ecouple(path,timescale, num_minima0, num_minima1, E0, 
     axarr[0].spines['bottom'].set_visible(False)
     axarr[0].set_xlim((1.7, 135))
     axarr[0].set_ylim((-5, 5))
-    axarr[0].set_yticks([-50, -25, 0, 25])
+    #axarr[0].set_yticks([-50, -25, 0, 25])
 
     leg = axarr[0].legend(title=r'$\beta E_{\rm o} = \beta E_1$', fontsize=14, loc='lower right', frameon=False)
     leg_title = leg.get_title()
