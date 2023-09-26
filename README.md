@@ -1,6 +1,6 @@
 # ATP-synthase
 
-This repository contains all of the code which generates results for the MITACS GRI 2023 project "Design principles of molecular machines: Optimal gearing ratio for coupled rotary motors" by J.C. Perez-Ramirez, M.P. Leighton and David A. Sivak, based on the code which generates results for the manuscript titled "Nonequilibrium Response of Stochastic Strongly-Coupled Rotary Motors." by E. Lathouwers , J.N.E. Lucero, and D.A. Sivak.
+This repository contains all of the code used for the MITACS GRI 2023 project "Design principles of molecular machines: Optimal gearing ratio for coupled rotary motors" by J.C. Perez-Ramirez, M.P. Leighton and David A. Sivak, based on the code which generates results for the manuscript titled "Nonequilibrium Response of Stochastic Strongly-Coupled Rotary Motors." by E. Lathouwers , J.N.E. Lucero, and D.A. Sivak.
 
 # Directories reference:
 
